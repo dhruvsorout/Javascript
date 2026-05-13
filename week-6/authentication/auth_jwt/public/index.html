@@ -22,8 +22,10 @@
         <button onclick="signin()">Submit</button>
     </div>
 
-    <button onclick="getUserInformation()">Get user information</button>
-    <div id="information"></div>
+    <div>
+        User information: 
+        <div id="information"></div>
+    </div>
 
     <div>
         <button onclick="logout()">Logout</button>
@@ -72,6 +74,7 @@
                 document.getElementById("information").innerHTML = response.data.username;
             }
         }
+        getUserInformation();
     </script>
 </body>
 </html>
