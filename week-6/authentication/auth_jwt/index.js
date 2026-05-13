@@ -1,8 +1,28 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const cors = require("cors")
 
 const app = express();
 app.use(express.json());
+
+
+/**
+ * link both frontend and backend
+ */
+
+/**
+ * METHOD - 1 
+ */
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/public/index.html")
+})
+
+
+/**
+ * METHOD - 2
+ */
+// app.use(cors());
+// app.use(express.static("./public"))
 
 const JWT_SECRET = "USER_APP";
 
