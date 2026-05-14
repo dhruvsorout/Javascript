@@ -82,7 +82,7 @@ function loggedInMiddleware(req, res, next){
                     message: "Unauthorized"
                 })
             } else {
-                req.username = decoded;
+                req.user = decoded;
                 next();
             }
         })
@@ -94,7 +94,7 @@ function loggedInMiddleware(req, res, next){
 }
 
 app.get("/me", loggedInMiddleware, (req, res) => {
-    const user = req.username;
+    const user = req.user;
 
     res.json({
         username: user.username

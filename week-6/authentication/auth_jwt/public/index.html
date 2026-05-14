@@ -22,13 +22,13 @@
         <button onclick="signin()">Submit</button>
     </div>
 
-    <div>
+    <div id="user-info">
         User information: 
         <div id="information"></div>
     </div>
 
     <div>
-        <button onclick="logout()">Logout</button>
+        <button onclick="logout()" id="logout-btn">Logout</button>
     </div>
 
     <script>
@@ -54,12 +54,17 @@
 
             localStorage.setItem("token", response.data.token);
 
-            alert("Signed in successfully")
+            getUserInformation();
+            render();
+
+            alert("Signed in successfully");
         }
 
         async function logout() {
             localStorage.removeItem("token");
-            alert("Logges out successfully")
+            alert("Logged out successfully");
+            render();
+            document.getElementById("information").innerHTML = "";
         }
 
         async function getUserInformation() {
@@ -74,6 +79,23 @@
                 document.getElementById("information").innerHTML = response.data.username;
             }
         }
+
+        function render(){
+            const token = localStorage.getItem("token");
+
+            if (token) {
+                document.getElementById("signup").style.display = "none";
+                document.getElementById("signin").style.display = "none";
+                document.getElementById("user-info").style.display = "block";
+                document.getElementById("logout-btn").style.display = "block";
+            } else {
+                document.getElementById("user-info").style.display = "none";
+                document.getElementById("logout-btn").style.display = "none";
+                document.getElementById("signup").style.display = "block";
+                document.getElementById("signin").style.display = "block";
+            }
+        }
+        render();
         getUserInformation();
     </script>
 </body>
