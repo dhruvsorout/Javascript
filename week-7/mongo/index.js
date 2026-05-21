@@ -1,10 +1,12 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
+
 const  { UserModel, TodoModel } = require("./db");
 const { auth, JWT_SECRET } = require("./auth");
 
-mongoose.connect("mongodb+srv://admin:ppp28LCQJ@cluster0.lvtcnop.mongodb.net/todo-dhruv-2");
+mongoose.connect(process.env.MONGO_URI);
 
 
 const app = express();
@@ -82,4 +84,4 @@ app.get("/todos", auth, async (req, res) => {
 });
 
 
-app.listen(3000);
+app.listen(process.env.PORT);
