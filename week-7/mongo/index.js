@@ -2,26 +2,60 @@ const express = require("express");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const { z } = require("zod");
 require("dotenv").config();
 
+// Internal imports
 const { UserModel, TodoModel } = require("./db");
 const { auth, JWT_SECRET } = require("./auth");
 
-mongoose.connect(process.env.MONGO_URI);
-
-
+// -------------------------------
+// App config
+// -------------------------------
 const app = express();
 app.use(express.json());
 
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log("MongoDB connected"))
+    .catch((err) => console.log("DB connection error:", err));
 
+
+// -------------------------------
+// Validation Schemas
+// -------------------------------
+
+const signupSchema = z.object({
+        email: z.string().min(3).max(100).email(),
+        name: z.string().min(3).max(50),
+        password: z.string().min(3).max(30)
+});
+
+
+// -------------------------------
+// Routes
+// -------------------------------
+
+/*
+    SIGNUP
+*/
 app.post("/signup", async (req, res) => {
     try {
-        const email = req.body.email;
-        const password = req.body.password;
-        const name = req.body.name;
+        // const parsedData = signupSchema.parse(req.body);
+        const parsedDataWithSuccess = signupSchema.safeParse(req.body);
 
+        if (!parsedDataWithSuccess.success) {
+            return res.status(400).json({
+                message: "Incorrect format",
+                error: parsedDataWithSuccess.error.issues
+            })
+        }
+
+        const { email, password, name} = req.body;
+
+        // hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // create user
         await UserModel.create({
             email: email,
             password: hashedPassword,
@@ -38,9 +72,12 @@ app.post("/signup", async (req, res) => {
     }
 });
 
+
+/*
+    SIGNIN
+*/
 app.post("/signin", async (req, res) => {
-    const email = req.body.email;
-    const password = req.body.password;
+    const { email, password } = req.body;
 
     const response = await UserModel.findOne({
         email: email,
@@ -65,6 +102,10 @@ app.post("/signin", async (req, res) => {
     }
 });
 
+
+/*
+    CREATE TODO
+*/
 app.post("/todo", auth, (req, res) => {
     const userId = req.userId;
     const title = req.body.title;
@@ -81,6 +122,10 @@ app.post("/todo", auth, (req, res) => {
     }) 
 });
 
+
+/*
+    GET TODOS
+*/
 app.get("/todos", auth, async (req, res) => {
     const userId = req.userId;
 
@@ -94,6 +139,9 @@ app.get("/todos", auth, async (req, res) => {
 });
 
 
+// -------------------------------
+// Server
+// -------------------------------
 app.listen(process.env.PORT, () => {
     console.log(`Server running on PORT ${process.env.PORT}`)
 });
