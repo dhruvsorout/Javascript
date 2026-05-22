@@ -1,9 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 require("dotenv").config();
 
-const  { UserModel, TodoModel } = require("./db");
+const { UserModel, TodoModel } = require("./db");
 const { auth, JWT_SECRET } = require("./auth");
 
 mongoose.connect(process.env.MONGO_URI);
@@ -14,19 +15,27 @@ app.use(express.json());
 
 
 app.post("/signup", async (req, res) => {
-    const email = req.body.email;
-    const password = req.body.password;
-    const name = req.body.name;
+    try {
+        const email = req.body.email;
+        const password = req.body.password;
+        const name = req.body.name;
 
-    await UserModel.create({
-        email: email,
-        password: password,
-        name: name
-    });
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-    res.json({
-        message: "You are signed up"
-    })
+        await UserModel.create({
+            email: email,
+            password: hashedPassword,
+            name: name
+        });
+
+        res.json({
+            message: "You are signed up"
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: "Error while signing up"
+        });
+    }
 });
 
 app.post("/signin", async (req, res) => {
@@ -35,12 +44,13 @@ app.post("/signin", async (req, res) => {
 
     const response = await UserModel.findOne({
         email: email,
-        password: password
     });
+
+    const passwordMatch = await bcrypt.compare(password, response.password);
 
     console.log(response);
 
-    if (response) {
+    if (response && passwordMatch) {
         const token = jwt.sign({
             id: response._id.toString()
         }, JWT_SECRET);
@@ -84,4 +94,6 @@ app.get("/todos", auth, async (req, res) => {
 });
 
 
-app.listen(process.env.PORT);
+app.listen(process.env.PORT, () => {
+    console.log(`Server running on PORT ${process.env.PORT}`)
+});
