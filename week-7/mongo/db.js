@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { string, boolean } = require("zod");
 
 const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;
@@ -10,9 +11,19 @@ const User = new Schema({
 });
 
 const Todo = new Schema({
-    userId: ObjectId,
-    title: String,
-    done: Boolean
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: "users",
+        required: true
+    },
+    title: {
+        type: String,
+        required: true,
+    },
+    done: {
+        type: Boolean,
+        default: false,
+    }
 });
 
 const UserModel = mongoose.model('users', User);

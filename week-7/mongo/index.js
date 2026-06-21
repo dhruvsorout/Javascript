@@ -137,7 +137,7 @@ app.get("/todos", auth, async (req, res) => {
 
     const todos = await TodoModel.find({
         userId: userId
-    })
+    }, "-__v")
 
     res.json({
         todos
