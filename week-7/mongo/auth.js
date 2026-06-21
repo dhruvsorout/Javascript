@@ -6,6 +6,12 @@ const JWT_SECRET = process.env.JWT_SECRET;
 function auth(req, res, next){
     const token = req.headers.authorization;
 
+    if(!token){
+        return res.status(401).json({
+            message: "No token provided"
+        });
+    }
+
     try {
         const response = jwt.verify(token, JWT_SECRET);
 
