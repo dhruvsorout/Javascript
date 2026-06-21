@@ -79,27 +79,33 @@ app.post("/signup", async (req, res) => {
 app.post("/signin", async (req, res) => {
     const { email, password } = req.body;
 
-    const response = await UserModel.findOne({
-        email: email,
-    });
+    const user = await UserModel.findOne({ email });
 
-    const passwordMatch = await bcrypt.compare(password, response.password);
-
-    console.log(response);
-
-    if (response && passwordMatch) {
-        const token = jwt.sign({
-            id: response._id.toString()
-        }, JWT_SECRET);
-
-        res.json({
-            token
-        })
-    } else {
-        res.status(403).json({
+    if (!user) {
+        return res.status(403).json({
             message: "Incorrect credentials"
         });
     }
+
+    const passwordMatch = await bcrypt.compare(
+        password,
+        user.password
+    );
+
+    if (!passwordMatch) {
+        return res.status(403).json({
+            message: "Incorrect credentials"
+        });
+    }
+
+    const token = jwt.sign(
+        {
+            id: user._id.toString()
+        },
+        JWT_SECRET
+    );
+
+    res.json({ token });
 });
 
 
